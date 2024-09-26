@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,43 +11,39 @@
     <link rel="stylesheet" href="css/style_login.css">
 </head>
 <body>
-<?php
-        include '../db.php'; // Include your database connection
+    <?php
+    require_once '../connect.php';
 
-        // Check if the form submission is valid (POST request and category_name is set)
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['author_name'])) {
-            $author_name = trim($_POST['author_name']); // Trim the input to avoid leading/trailing spaces
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $tentgia = isset($_POST['tentacgia']) ? $_POST['tentacgia'] : null;
 
-            if (!empty($author_name)) {
-                // Prepare SQL statement to insert the new category into the 'theloai' table
-                $sql = "INSERT INTO tacgia (ten_tgia) VALUES (?)";
-            
-                // Use prepared statements to avoid SQL injection
-                if ($stmt = $conn->prepare($sql)) {
-                    $stmt->bind_param("s", $author_name);
-                
-                    // Execute the prepared statement
-                    if ($stmt->execute()) {
-                        // Redirect to the category list page with a success message
-                        header("Location:author.php?msg=success");
-                        exit();
-                    } else {
-                        // If there is an error, display it
-                        echo "Error: " . $stmt->error;
-                    }
-                } else {
-                    echo "Error preparing statement: " . $conn->error;
-                }
+        if ($tentgia == NULL) {
+            ?>
+            <script>
+                alert("Mời nhập lại");
+                window.location.href = "add_author.php";
+            </script>
+            <?php
+        } else {
+            $themsql = "INSERT INTO tacgia (ten_tgia) VALUES ('$tentgia')";
+            if (mysqli_query($conn, $themsql)) {
+                ?>
+                <script>
+                    alert("Thêm thành công");
+                    window.location.href = "author.php";
+                </script>
+                <?php
             } else {
-                // Handle case when category name is empty
-                header("Location: add_author.php?msg=empty");
-                exit();
+                ?>
+                <script>
+                    alert("Lỗi khi thêm tác giả");
+                </script>
+                <?php
             }
         }
-
-        // Close the database connection
-        $conn->close();
+    }
     ?>
+
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary shadow p-3 bg-white rounded">
             <div class="container-fluid">
@@ -65,10 +62,10 @@
                         <a class="nav-link" href="../index.php">Trang ngoài</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link " href="category.php">Thể loại</a>
+                        <a class="nav-link active fw-bold" href="category.php">Thể loại</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="author.php">Tác giả</a>
+                        <a class="nav-link" href="author.php">Tác giả</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="article.php">Bài viết</a>
@@ -80,28 +77,21 @@
 
     </header>
     <main class="container mt-5 mb-5">
-    <div class="row">
+        <!-- <h3 class="text-center text-uppercase mb-3 text-primary">CẢM NHẬN VỀ BÀI HÁT</h3> -->
+        <div class="row">
             <div class="col-sm">
                 <h3 class="text-center text-uppercase fw-bold">Thêm mới tác giả</h3>
-                
-                <!-- Check for error messages -->
-                <?php
-                    if (isset($_GET['msg']) && $_GET['msg'] == 'empty') {
-                        echo '<div class="alert alert-danger">Vui lòng nhập tên tác giả.</div>';
-                    } elseif (isset($_GET['msg']) && $_GET['msg'] == 'success') {
-                        echo '<div class="alert alert-success">Thêm tác giả thành công!</div>';
-                    }
-                ?>
-                
-                <!-- Form to add a new category -->
                 <form action="add_author.php" method="post">
                     <div class="input-group mt-3 mb-3">
                         <span class="input-group-text" id="lblCatName">Tên tác giả</span>
-                        <input type="text" class="form-control" name="author_name" placeholder="Nhập tên tác giả" required>
+                        <input type="text" class="form-control" name="tentacgia" >
                     </div>
-                    <div class="form-group float-end">
+
+                    
+
+                    <div class="form-group  float-end ">
                         <input type="submit" value="Thêm" class="btn btn-success">
-                        <a href="author.php" class="btn btn-warning">Quay lại</a>
+                        <a href="author.php" class="btn btn-warning ">Quay lại</a>
                     </div>
                 </form>
             </div>

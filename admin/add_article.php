@@ -1,31 +1,4 @@
-<?php 
-include '../db.php';
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tieude = $_POST['tieude'];
-    $ten_bhat = $_POST['ten_bhat'];
-    $ma_tloai = $_POST['ma_tloai'];
-    $tomtat = $_POST['tomtat'];
-    $noidung = $_POST['noidung'];
-    $ma_tgia = $_POST['ma_tgia'];
-    $hinhanh = $_POST['hinhanh'];
-    $ngayviet = date('D-M-Y');
-     
-    $stmt = $conn->prepare("INSERT INTO baiviet (tieude, ten_bhat, ma_tloai, tomtat, noidung, ma_tgia, ngayviet) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssssss", $tieude, $ten_bhat, $ma_tloai, $tomtat, $noidung, $ma_tgia, $ngayviet);
-
-    if ($stmt->execute()) {
-        echo "Bài viết mới đã được thêm!";
-        header('Location: index.php');
-        exit;
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-
-    $stmt->close();
-    $conn->close();
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +11,68 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
     <link rel="stylesheet" href="css/style_login.css">
 </head>
 <body>
+    <?php
+    require_once '../connect.php';
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $tieude = isset($_POST['tieude']) ? $_POST['tieude'] : null;
+        $tenbhat = isset($_POST['tenbhat']) ? $_POST['tenbhat'] : null;
+        $matloai = isset($_POST['matloai']) ? $_POST['matloai'] : null;
+        $tomtat = isset($_POST['tomtat']) ? $_POST['tomtat'] : null;
+        $matgia = isset($_POST['matgia']) ? $_POST['matgia'] : null;
+        $ngayviet = isset($_POST['ngayviet']) ? $_POST['ngayviet'] : null;
+
+        // Kiểm tra nếu mã thể loại hoặc mã tác giả không được nhập
+        if ($matloai == null || $matgia == null) {
+            ?>
+            <script>
+                alert("Mời nhập đầy đủ mã thể loại và mã tác giả");
+                window.location.href = "add_article.php";
+            </script>
+            <?php
+        } else {
+            // Truy vấn kiểm tra xem mã thể loại có tồn tại không
+            $check_tloai_sql = "SELECT * FROM theloai WHERE ma_tloai = '$matloai'";
+            $result_tloai = mysqli_query($conn, $check_tloai_sql);
+
+            // Truy vấn kiểm tra xem mã tác giả có tồn tại không
+            $check_tgia_sql = "SELECT * FROM tacgia WHERE ma_tgia = '$matgia'";
+            $result_tgia = mysqli_query($conn, $check_tgia_sql);
+
+            // Kiểm tra sự tồn tại của cả mã thể loại và mã tác giả
+            if (mysqli_num_rows($result_tloai) > 0 && mysqli_num_rows($result_tgia) > 0) {
+                // Thực hiện câu lệnh INSERT nếu cả mã thể loại và mã tác giả đều tồn tại
+                $themsql = "INSERT INTO baiviet (tieude, ten_bhat, ma_tloai, tomtat, ma_tgia, ngayviet) 
+                            VALUES ('$tieude', '$tenbhat', '$matloai', '$tomtat', '$matgia', '$ngayviet')";
+
+                if (mysqli_query($conn, $themsql)) {
+                    ?>
+                    <script>
+                        alert("Thêm bài viết thành công");
+                        window.location.href = "article.php";
+                    </script>
+                    <?php
+                } else {
+                    ?>
+                    <script>
+                        alert("Lỗi khi thêm bài viết");
+                    </script>
+                    <?php
+                }
+            } else {
+                // Nếu mã thể loại hoặc mã tác giả không tồn tại
+                ?>
+                <script>
+                    alert("Mã thể loại hoặc mã tác giả không tồn tại. Vui lòng nhập lại.");
+                    window.location.href = "add_article.php";
+                </script>
+                <?php
+            }
+        }
+    }
+    ?>
+
+
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary shadow p-3 bg-white rounded">
             <div class="container-fluid">
@@ -56,13 +91,13 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
                         <a class="nav-link" href="../index.php">Trang ngoài</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link " href="category.php">Thể loại</a>
+                        <a class="nav-link active fw-bold" href="category.php">Thể loại</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="author.php">Tác giả</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="article.php">Bài viết</a>
+                        <a class="nav-link" href="article.php">Bài viết</a>
                     </li>
                 </ul>
                 </div>
@@ -71,47 +106,50 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
 
     </header>
     <main class="container mt-5 mb-5">
-    <div class="row">
-        <div class="col-sm">
-            <h3 class="text-center text-uppercase fw-bold">Thêm Bài Viết</h3>
-            <form action="" method="post">
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Tên Bài Viết</span>
-                    <input type="text" class="form-control" name="tieude" required>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Tên Bài Hát</span>
-                    <input type="text" class="form-control" name="ten_bhat" required>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Mã Thể Loại</span>
-                    <input type="text" class="form-control" name="ma_tloai" required>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Tóm Tắt</span>
-                    <input type="text" class="form-control" name="tomtat" required>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Nội Dung</span>
-                    <textarea class="form-control" name="noidung" required></textarea>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Tác Giả</span>
-                    <input type="text" class="form-control" name="ma_tgia" required>
-                </div>
-                <div class="input-group mt-3 mb-3">
-                    <span class="input-group-text" id="lblCatName">Ngày Viết</span>
-                    <input type="date" class="form-control" name="ngayviet" required>
-                </div>
+        <!-- <h3 class="text-center text-uppercase mb-3 text-primary">CẢM NHẬN VỀ BÀI HÁT</h3> -->
+        <div class="row">
+            <div class="col-sm">
+                <h3 class="text-center text-uppercase fw-bold">Thêm mới bài viết</h3>
+                <form action="add_article.php" method="post">
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Tiêu đề</span>
+                        <input type="text" class="form-control" name="tieude" >
+                    </div>
 
-                <div class="form-group float-end ">
-                    <input type="submit" value="Thêm" class="btn btn-success">
-                    <a href="article.php" class="btn btn-warning">Quay Lại</a>
-                </div>
-            </form>
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Tên bài hát</span>
+                        <input type="text" class="form-control" name="tenbhat" >
+                    </div>
+
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Mã thể loại</span>
+                        <input type="text" class="form-control" name="matloai" >
+                    </div>
+
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Tóm tắt</span>
+                        <textarea name="tomtat" rows="5" cols="160"></textarea>
+                    </div>
+
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Mã tác giả</span>
+                        <input type="text" class="form-control" name="matgia" >
+                    </div>
+
+                    <div class="input-group mt-3 mb-3">
+                        <span class="input-group-text" >Ngày viết</span>
+                        <input type="date" class="form-control" name="ngayviet" >
+                    </div>
+                    
+
+                    <div class="form-group  float-end ">
+                        <input type="submit" value="Thêm" class="btn btn-success">
+                        <a href="article.php" class="btn btn-warning ">Quay lại</a>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-</main>
+    </main>
     <footer class="bg-white d-flex justify-content-center align-items-center border-top border-secondary  border-2" style="height:80px">
         <h4 class="text-center text-uppercase fw-bold">TLU's music garden</h4>
     </footer>

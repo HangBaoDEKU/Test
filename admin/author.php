@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="css/style_login.css">
 </head>
 <body>
+
     <header>
         <nav class="navbar navbar-expand-lg bg-body-tertiary shadow p-3 bg-white rounded">
             <div class="container-fluid">
@@ -28,10 +30,10 @@
                         <a class="nav-link" href="../index.php">Trang ngoài</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link " href="category.php">Thể loại</a>
+                        <a class="nav-link active fw-bold" href="category.php">Thể loại</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="author.php">Tác giả</a>
+                        <a class="nav-link" href="author.php">Tác giả</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="article.php">Bài viết</a>
@@ -43,41 +45,48 @@
 
     </header>
     <main class="container mt-5 mb-5">
+        <!-- <h3 class="text-center text-uppercase mb-3 text-primary">CẢM NHẬN VỀ BÀI HÁT</h3> -->
         <div class="row">
             <div class="col-sm">
-                <a href="./add_author.php" class="btn btn-success">Thêm mới</a>
+                <a href="add_author.php" class="btn btn-success">Thêm mới</a>
                 <table class="table">
                     <thead>
                         <tr>
-                            <th scope="col">STT</th>
+                            <th scope="col">#</th>
                             <th scope="col">Tên tác giả</th>
                             <th>Sửa</th>
                             <th>Xóa</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- PHP hiển thị danh sách tác giả -->
-                        <?php
-                        include '../db.php'; // Kết nối CSDL
-
-                        // Truy vấn lấy danh sách thể loại
-                        $sql = "SELECT ma_tgia, ten_tgia FROM tacgia";
-                        $result = $conn->query($sql);
-
-                        if ($result->num_rows > 0) {
+                        <?php 
+                            include '../connect.php'; // Kết nối CSDL
+                            $sql = "SELECT ma_tgia, ten_tgia FROM tacgia";
+                            $result = $conn->query($sql);
+                        
+                          if ($result->num_rows > 0) {
                             // Hiển thị thể loại
-                            while($row = $result->fetch_assoc()) {
-                                echo "<tr>";
-                                echo "<td>" . $row['ma_tgia'] . "</td>";
-                                echo "<td>" . $row['ten_tgia'] . "</td>";
-                                echo '<td><a href="edit_author.php?id=' . $row['ma_tgia'] . '"><i class="fa-solid fa-pen-to-square"></i></a></td>';
-                                echo '<td><a href="del_author.php?id=' . $row['ma_tgia'] . '" onclick="return confirm(\'BẠN CHẮC CHẮN XÓA TÁC GIẢ NÀY CHỨ?\')"><i class="fa-solid fa-trash"></i></a></td>';
-                                echo "</tr>";
+                            while($row = $result->fetch_assoc()) {                         
+                            ?>
+                            <tr>
+                                <th scope="row"><?php echo $row['ma_tgia'];?></th>
+                                <td><?php echo $row['ten_tgia'];?></td>
+                                <td>
+                                    <a href="edit_author.php?id=<?php echo $row['ma_tgia'];?>"><i class="fa-solid fa-pen-to-square"></i></a>
+                                </td>
+                                <td>
+                                    <a onclick="return confirm('Bạn có muốn xóa tác giả này không ?');" href="delete_author.php?id=<?php echo $row['ma_tgia'];?>"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            <?php
+                            
                             }
+
                         } else {
-                            echo "<tr><td colspan='4'>Không có tác giả nào.</td></tr>";
+                            echo "Không có thể loại nào.";
                         }
                         ?>
+                       
                     </tbody>
                 </table>
             </div>
